@@ -50,9 +50,9 @@ def equal_colors(*args): # Restricciones horizontales y verticales
         b = 0
         n = 0
         for i in args:
-            if i == "B":
+            if i == "O":
                 b += 1
-            elif i == "N":
+            elif i == "X":
                 n += 1
         return b == n
 

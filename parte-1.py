@@ -25,11 +25,11 @@ def main():
     # Creacion de las variables con python-constraint
     for position, cell_value in enumerate(tablero):
         if cell_value == ".":
-            problem.addVariable(position, ["N", "B"])
-        elif cell_value == "N":
-            problem.addVariable(position, ["N"])
-        elif cell_value == "B":
-            problem.addVariable(position, ["B"])
+            problem.addVariable(position, ["X","O"])
+        elif cell_value == "X":
+            problem.addVariable(position, ["X"])
+        elif cell_value =="O":
+            problem.addVariable(position, "O")
 
     # Añadir las restricciones al problema
 
