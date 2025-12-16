@@ -3,37 +3,62 @@ import time
 from grafo import Grafo
 from algoritmo import AStar
 
+# En parte-2.py
+
+# En parte-2.py
+
 def cargar_datos(nombre_mapa):
     grafo = Grafo()
     archivo_gr = f"{nombre_mapa}.gr"
     archivo_co = f"{nombre_mapa}.co"
     
-    # 1. Cargar Coordenadas (.co)
+    # 1. Cargar Coordenadas
+    print(f"Cargando coordenadas ({archivo_co})...")
     try:
         with open(archivo_co, 'r') as f:
-            for linea in f:
-                if linea.startswith('v'):
-                    partes = linea.split()
-                    # Formato: v id lon lat (enteros * 10^6)
-                    nid = int(partes[1])
-                    lon = int(partes[2]) / 1000000.0
-                    lat = int(partes[3]) / 1000000.0
+            for line in f:
+                # DETECTAR TAMAÑO EN EL .CO
+                if line.startswith('p'):
+                    # Formato: p aux sp co <nodos>
+                    parts = line.split()
+                    # El número de nodos suele ser el último elemento
+                    num_nodos = int(parts[-1])
+                    grafo.reservar_tamano(num_nodos)
+
+                elif line.startswith('v'):
+                    parts = line.split()
+                    nid = int(parts[1])
+                    lon = int(parts[2]) 
+                    lat = int(parts[3])
+                    # Si el archivo .co no tuviera línea 'p', esto fallaría.
+                    # Pero los archivos DIMACS estándar siempre la tienen.
                     grafo.set_coords(nid, lat, lon)
     except FileNotFoundError:
         print(f"Error: No se encontró {archivo_co}")
         sys.exit(1)
+    except IndexError:
+        print("Error: El archivo .co no tiene cabecera 'p' o los IDs superan el tamaño.")
+        sys.exit(1)
 
-    # 2. Cargar Grafo (.gr)
+    # 2. Cargar Grafo
+    print(f"Cargando grafo ({archivo_gr})...")
     try:
         with open(archivo_gr, 'r') as f:
-            for linea in f:
-                if linea.startswith('a'):
-                    partes = linea.split()
-                    # Formato: a u v w
-                    u = int(partes[1])
-                    v = int(partes[2])
-                    w = int(partes[3])
-                    grafo.add_edge(u, v, w)
+            for line in f:
+                if line.startswith('p'):
+                    # Si no se reservó en el .co, se reserva aquí.
+                    # Si ya se reservó, el grafo ignorará esta llamada gracias a la protección.
+                    parts = line.split()
+                    num_nodos = int(parts[2])
+                    grafo.reservar_tamano(num_nodos)
+                
+                elif line.startswith('a'):
+                    parts = line.split()
+                    u = int(parts[1])
+                    v = int(parts[2])
+                    w = int(parts[3])
+                    # Usamos add_edge_direct para velocidad máxima
+                    grafo.add_edge_direct(u, v, w)
     except FileNotFoundError:
         print(f"Error: No se encontró {archivo_gr}")
         sys.exit(1)
@@ -69,7 +94,7 @@ def guardar_salida(camino, grafo, fichero_salida):
 
 def main():
     if len(sys.argv) != 5:
-        print("Uso: python parte-2.py <inicio> <fin> <mapa> <salida>")
+        print("Uso: python3 parte-2.py <inicio> <fin> <mapa> <salida>")
         return
 
     origen = int(sys.argv[1])
@@ -91,7 +116,7 @@ def main():
     tiempo_total = end_time - start_time
     nodos_seg = expandidos / tiempo_total if tiempo_total > 0 else 0
 
-    # Imprimir estadísticas por consola según formato [cite: 130-136]
+    # Imprimir estadísticas
     print(f"# vertices: {grafo.get_num_vertices()}")
     print(f"# arcos: {grafo.get_num_arcos()}")
     
@@ -99,8 +124,7 @@ def main():
         print(f"Solución óptima encontrada con coste {coste}")
         print(f"Tiempo de ejecución: {tiempo_total:.2f} segundos")
         print(f"# expansiones: {expandidos} ({nodos_seg:.2f} nodes/sec)")
-        
-        # Guardar fichero
+
         guardar_salida(camino, grafo, fichero_salida)
     else:
         print("No se encontró camino.")
