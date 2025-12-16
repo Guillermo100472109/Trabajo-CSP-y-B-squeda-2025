@@ -7,8 +7,7 @@ class AStar:
         self.grafo = grafo
         self.nodos_expandidos = 0
 
-    def heuristica(self, nodo, meta): # Distancia Haversine
-        
+    def heuristica(self, nodo, meta):
         c1 = self.grafo.get_coords(nodo)
         c2 = self.grafo.get_coords(meta)
         
@@ -27,9 +26,16 @@ class AStar:
              math.sin(d_lon / 2)**2)
              
         c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-        return R * c
+        distancia = R * c
 
-    def resolver(self, start, goal):
+        return distancia * 10
+
+    def resolver(self, start, goal, usar_heuristica=True):
+        """
+        Resuelve el problema. 
+        Si usar_heuristica=True, ejecuta A* (Búsqueda Informada).
+        Si usar_heuristica=False, ejecuta Dijkstra (Fuerza Bruta / Coste Uniforme).
+        """
         self.nodos_expandidos = 0
         
         abierta = Abierta()
@@ -41,7 +47,8 @@ class AStar:
         parents = {start: None}
         
         # f inicial
-        h_start = self.heuristica(start, goal)
+        # Si es Dijkstra, h=0, por tanto f = g
+        h_start = self.heuristica(start, goal) if usar_heuristica else 0
         abierta.push(h_start, start)
         
         coste_final = -1
@@ -52,12 +59,11 @@ class AStar:
             if cerrada.contains(actual):
                 continue
             
-            # Contamos como expansión el sacar de la lista abierta y procesar el nodo
             self.nodos_expandidos += 1
             cerrada.add(actual)
             
             if actual == goal:
-                coste_final = g[actual] # Guardamos el coste real g(n)
+                coste_final = g[actual]
                 return self.reconstruir_camino(parents, actual), coste_final, self.nodos_expandidos
             
             vecinos = self.grafo.get_neighbors(actual)
@@ -71,8 +77,13 @@ class AStar:
                     g[vecino] = nuevo_g
                     parents[vecino] = actual
                     
-                    # f = g + h como en la definición del A*
-                    f = nuevo_g + self.heuristica(vecino, goal)
+                    # CÁLCULO DE F
+                    if usar_heuristica:
+                        h = self.heuristica(vecino, goal)
+                        f = nuevo_g + h  # A* (f = g + h)
+                    else:
+                        f = nuevo_g      # Dijkstra (f = g)
+                    
                     abierta.push(f, vecino)
                     
         return None, 0, self.nodos_expandidos

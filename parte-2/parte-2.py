@@ -3,10 +3,6 @@ import time
 from grafo import Grafo
 from algoritmo import AStar
 
-# En parte-2.py
-
-# En parte-2.py
-
 def cargar_datos(nombre_mapa):
     grafo = Grafo()
     archivo_gr = f"{nombre_mapa}.gr"
