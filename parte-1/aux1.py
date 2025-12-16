@@ -1,4 +1,7 @@
 def print_decorated_matrix(board, size):
+    if not board:
+        print("No se encontró ninguna solución.")
+        return
     border = "+---" * size + "+"
     print(border)
     for i in range(size):
@@ -10,23 +13,6 @@ def print_decorated_matrix(board, size):
         print(row_str)
         print(border)
         
-def print_solution_matrix(solution, size):
-    if not solution:
-        print("No se encontró ninguna solución.")
-        return
-
-    board = [solution[i] for i in range(size * size)]
-
-    border = "+---" * size + "+"
-    print(border)
-    for i in range(size):
-        row_str = "|"
-        for j in range(size):
-            cell = board[i * size + j]
-            row_str += f" {cell} |"
-        print(row_str)
-        print(border)
-
 def make_rows(n):
     filas = []
     for i in range(n):

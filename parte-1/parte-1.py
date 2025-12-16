@@ -66,7 +66,7 @@ def main():
             # Convertimos el diccionario de solución a lista/matriz para tu función de print
             solucion_dict = soluciones[0]
             solucion_lista = [solucion_dict[i] for i in range(n*n)]
-            print_solution_matrix(solucion_lista, n)
+            print_decorated_matrix(solucion_lista, n)
             
         sys.stdout = original_stdout # Restauramos salida
 
