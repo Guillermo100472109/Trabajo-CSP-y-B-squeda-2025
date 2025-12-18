@@ -2,21 +2,14 @@ from array import array
 
 class Grafo:
     def __init__(self):
-        # Inicializamos vacíos
         self.adj = []
         self.lat = array('i')
         self.lon = array('i')
         self.num_arcos = 0
         self.num_nodos = 0
 
-    # En grafo.py
-
     def reservar_tamano(self, num_nodos):
-        """
-        Crea las estructuras con el tamaño exacto.
-        Solo actúa si no se ha reservado memoria previamente.
-        """
-        # PROTECCIÓN: Si ya tenemos memoria reservada (num_nodos > 0), no hacemos nada
+       
         if self.num_nodos > 0:
             return
 
@@ -27,26 +20,25 @@ class Grafo:
         self.num_nodos = tamano_real
 
     def add_edge_direct(self, u, v, w):
-        """
-        Versión rápida de add_edge asumiendo que ya hay memoria reservada.
-        """
+
         if self.adj[u] is None:
             self.adj[u] = array('I')
         self.adj[u].append(v)
         self.adj[u].append(w)
         self.num_arcos += 1
 
-    # ... Mantén el resto de métodos (get_neighbors, etc.) igual ...
     def get_neighbors(self, u):
         if u >= len(self.adj) or self.adj[u] is None:
             return []
         data = self.adj[u]
+        vecinos = []
         for i in range(0, len(data), 2):
-            yield (data[i], data[i+1])
+            vecinos.append((data[i], data[i+1]))
+        return vecinos
 
     def get_coords(self, u):
         if u < len(self.lat) and self.lat[u] != 0:
-            return (self.lat[u] / 1000000.0, self.lon[u] / 1000000.0)
+            return (self.lat[u], self.lon[u])
         return None
         
     def get_num_vertices(self):

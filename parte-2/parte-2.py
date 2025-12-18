@@ -17,7 +17,6 @@ def cargar_datos(nombre_mapa):
                 if line.startswith('p'):
                     # Formato: p aux sp co <nodos>
                     parts = line.split()
-                    # El número de nodos suele ser el último elemento
                     num_nodos = int(parts[-1])
                     grafo.reservar_tamano(num_nodos)
 
@@ -26,8 +25,6 @@ def cargar_datos(nombre_mapa):
                     nid = int(parts[1])
                     lon = int(parts[2]) 
                     lat = int(parts[3])
-                    # Si el archivo .co no tuviera línea 'p', esto fallaría.
-                    # Pero los archivos DIMACS estándar siempre la tienen.
                     grafo.set_coords(nid, lat, lon)
     except FileNotFoundError:
         print(f"Error: No se encontró {archivo_co}")
@@ -36,14 +33,12 @@ def cargar_datos(nombre_mapa):
         print("Error: El archivo .co no tiene cabecera 'p' o los IDs superan el tamaño.")
         sys.exit(1)
 
-    # 2. Cargar Grafo
+    # Cargar Grafo
     print(f"Cargando grafo ({archivo_gr})...")
     try:
         with open(archivo_gr, 'r') as f:
             for line in f:
                 if line.startswith('p'):
-                    # Si no se reservó en el .co, se reserva aquí.
-                    # Si ya se reservó, el grafo ignorará esta llamada gracias a la protección.
                     parts = line.split()
                     num_nodos = int(parts[2])
                     grafo.reservar_tamano(num_nodos)
@@ -53,7 +48,6 @@ def cargar_datos(nombre_mapa):
                     u = int(parts[1])
                     v = int(parts[2])
                     w = int(parts[3])
-                    # Usamos add_edge_direct para velocidad máxima
                     grafo.add_edge_direct(u, v, w)
     except FileNotFoundError:
         print(f"Error: No se encontró {archivo_gr}")
@@ -72,7 +66,6 @@ def guardar_salida(camino, grafo, fichero_salida):
         u = camino[i]
         v = camino[i+1]
         
-        # Buscar coste de la arista u->v
         peso_arista = 0
         vecinos = grafo.get_neighbors(u)
         for vecino, peso in vecinos:
@@ -98,15 +91,12 @@ def main():
     nombre_mapa = sys.argv[3]
     fichero_salida = sys.argv[4]
 
-    # Cargar grafo
     grafo = cargar_datos(nombre_mapa)
 
-    # Instanciar algoritmo
     solver = AStar(grafo)
 
-    # Ejecutar y medir tiempo
     start_time = time.time()
-    camino, coste, expandidos = solver.resolver(origen, destino)
+    camino, coste, expandidos = solver.resolver(origen, destino, num_nodos=grafo.get_num_vertices(), usar_heuristica=True)
     end_time = time.time()
     
     tiempo_total = end_time - start_time

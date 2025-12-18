@@ -13,7 +13,6 @@ def carga_optimizada(nombre_mapa):
     print(f"--- Cargando {nombre_mapa} ---")
     t0 = time.time()
 
-    # 1. Cargar coordenadas (buscando cabecera 'p' para reservar memoria)
     print(f"Leyendo coordenadas ({ruta_co})...")
     try:
         with open(ruta_co, 'r') as f:
@@ -27,7 +26,6 @@ def carga_optimizada(nombre_mapa):
                 elif line.startswith('v'):
                     parts = line.split()
                     nid = int(parts[1])
-                    # parts[2]=longitud, parts[3]=latitud en DIMACS estándar
                     grafo.set_coords(nid, int(parts[3]), int(parts[2]))
                     
     except FileNotFoundError:
@@ -37,7 +35,7 @@ def carga_optimizada(nombre_mapa):
         print("Error al leer coordenadas. Posible falta de cabecera 'p'.")
         sys.exit(1)
 
-    # 2. Cargar Grafo 
+    # Cargar Grafo 
     print(f"Leyendo estructura del grafo ({ruta_gr})...")
     try:
         with open(ruta_gr, 'r') as f:
@@ -79,7 +77,7 @@ def guardar_salida(camino, grafo, fichero_salida):
     except IOError:
         print(f"Error escribiendo {fichero_salida}")
 
-def ejecutar_bateria(grafo, casos):
+def ejecutar_bateria(grafo, casos, n):
     solver = AStar(grafo)
     carpeta_salida = "resultados_tests"
     if not os.path.exists(carpeta_salida):
@@ -96,19 +94,18 @@ def ejecutar_bateria(grafo, casos):
 
         # --- 1. Ejecutar A* (Heurística ACTIVADA) ---
         t0 = time.time()
-        camino_a, coste, exp_a = solver.resolver(start, goal, usar_heuristica=True)
+        camino_a, coste, exp_a = solver.resolver(start, goal, n,  usar_heuristica=True)
         t_astar = time.time() - t0
         tiempos_astar.append(t_astar)
 
         # --- 2. Ejecutar Dijkstra (Heurística DESACTIVADA) ---
         t0 = time.time()
-        # Nota: Dijkstra dará el mismo coste y camino, pero expandirá más
-        _, _, exp_d = solver.resolver(start, goal, usar_heuristica=False)
+        _, _, exp_d = solver.resolver(start, goal,n, usar_heuristica=False)
         t_dijk = time.time() - t0
 
-        # Calcular factor de mejora (cuántas veces menos nodos explora A*)
+        # Calcular factor de mejora 
         if exp_a > 0:
-            factor = exp_d / exp_a
+            factor = t_dijk / t_astar
             mejora_str = f"{factor:.1f}x"
         else:
             mejora_str = "-"
@@ -130,24 +127,19 @@ if __name__ == "__main__":
     # --- CONFIGURACIÓN ---
     mapa = "USA-road-d.NY"  # Cambia a .NY para pruebas rápidas
     
-    # 1. Cargar Grafo
     grafo_global = carga_optimizada(mapa)
     
-    # 2. Definir casos
     casos_prueba = [
         (1, 500),         
         (100, 2000),      
         (1, 10000),     
     ]
     
-    # Añadir aleatorios
     max_id = grafo_global.get_num_vertices()
     random.seed(42)
-    # Generamos 3 casos aleatorios
     for _ in range(3):
         u = random.randint(1, max_id)
         v = random.randint(1, max_id)
         casos_prueba.append((u, v))
 
-    # 3. Ejecutar comparativa
-    ejecutar_bateria(grafo_global, casos_prueba)
+    ejecutar_bateria(grafo_global, casos_prueba, max_id)
