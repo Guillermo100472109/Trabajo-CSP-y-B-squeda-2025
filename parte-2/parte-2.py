@@ -96,7 +96,7 @@ def main():
     solver = AStar(grafo)
 
     start_time = time.time()
-    camino, coste, expandidos = solver.resolver(origen, destino, num_nodos=grafo.get_num_vertices(), usar_heuristica=True)
+    camino, coste, expandidos = solver.resolver(origen, destino, grafo.get_num_vertices(), usar_heuristica=True)
     end_time = time.time()
     
     tiempo_total = end_time - start_time
